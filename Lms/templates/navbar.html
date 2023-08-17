@@ -1,0 +1,63 @@
+{% load static %}
+<div class="wrapper">
+  <div class="sidebar">
+    <div class="profile">
+     
+      <img src="{{ request.session.user_profile_picture }}" alt="profile_picture">
+    
+      <p>{{ user_profile.phone }}</p>
+
+    </div>
+    <ul>
+      <li>
+        <a href="#" class="active">
+          <span class="icon"><i class="fas fa-home"></i></span>
+          <span class="item">Home</span>
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'user.dashboard' %}">
+          <span class="icon"><i class="bi bi-grid"></i></span>
+          <span class="item">Dashboard</span>
+        </a>
+      </li>
+      <li>
+        <a href="#">
+          <span class="icon"><i class="bi bi-people"></i></span>
+          <span class="item">Counseling</span>
+        </a>
+      </li>
+      <li>
+        <a href="#">
+          <span class="icon"><i class="bi bi-tachometer-alt"></i></span>
+          <span class="item">Discussion</span>
+        </a>
+      </li>
+      <li>
+        <a href="#">
+          <span class="icon"><i class="bi bi-database"></i></span>
+          <span class="item">Courses</span>
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'user.private.view' %}">
+          <span class="icon"><i class="bi bi-chart-line"></i></span>
+          <span class="item">Private files</span>
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'user.chat.view' %}">
+       
+          <span class="item">Messages</span>
+          <span class="badge bg-primary badge-number">{{ unread_message_count }}</span>
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'user.settings' %}">
+          <span class="icon"><i class="bi bi-gear"></i></span>
+          <span class="item">Settings</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>

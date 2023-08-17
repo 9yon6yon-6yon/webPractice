@@ -1,0 +1,117 @@
+{% extends '_base.html' %}
+
+{% block title %}
+Create New User
+{% endblock %}
+{% block content %}
+
+
+<section class="section register min-vh-100 d-flex flex-column align-items-center justify-content-center py-4">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-xxl-10 d-flex flex-column align-items-center justify-content-center">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <form class="row needs-validation" method="POST" action="{% url 'create-user' %}"
+                            onsubmit="return validateForm()"   enctype="multipart/form-data" novalidate>
+                            {% csrf_token %}
+                            <div class="pt-4 pb-2">
+                                <h5 class="card-title text-center pb-0 fs-4">Create Users</h5>
+                            </div>
+
+                            {% if messages %}
+                            {% for message in messages %}
+                            <p class="alert {{ message.tags }}">{{ message }}</p>
+                            {% endfor %}
+                            {% endif %}
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5 class="card-title">Personal Info</h5>
+                                    <div class="form-group">
+                                        <label for="userName">Name</label>
+                                        <input type="text" class="form-control" id="userName" name="userName">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="image_path">Profile Picture</label>
+                                        <input type="file" class="form-control" id="image_path" name="image_path">
+                                    </div>
+                                   
+                                </div>
+                                <div class="col-md-6">
+                                    <h5 class="card-title">Contact Info</h5>
+                                    <div class="form-group">
+                                        <label for="phone">Phone</label>
+                                        <input type="tel" class="form-control" id="phone" name="phone">
+                                    </div>
+
+
+                                    <div class="form-group">
+                                        <label for="address">User Status</label>
+                                        <select id="user_type" name="type" class="form-select" aria-label="User Type">
+                                            <option value="student">Student</option>
+                                            <option value="teacher">Faculty</option>
+                                        </select>
+                                    </div>
+                                 
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="input-group has-validation">
+                                        <span class="input-group-text ri-account-box-fill"
+                                            id="inputGroupPrepend"></span>
+                                        <input type="email" name="email" class="form-control" id="yourEmail"
+                                            placeholder="Email" required>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="input-group has-validation">
+                                        <span class="input-group-text ri-key-fill" id="inputGroupPrepend"></span>
+                                        <input type="password" name="password" class="form-control" id="typePasswordX"
+                                            placeholder="Password" required>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <button class="btn btn-primary w-100" type="submit">Submit</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</section>
+
+
+
+{% endblock %}
+
+
+{% block script %}
+
+<script>
+
+    function validateForm() {
+        const email = document.getElementById('typeEmailX').value;
+        const password = document.getElementById('typePasswordX').value;
+        const confirmPassword = document.getElementById('typePasswordX2').value;
+        const userType = document.getElementById('user_type').value;
+
+        if (!email || !password || !confirmPassword || !userType) {
+            alert('Please fill in all the required fields.');
+            return false;
+        }
+
+        if (password !== confirmPassword) {
+            alert('Password and Confirm Password must match.');
+            return false;
+        }
+
+        return true;
+    }
+</script>
+{% endblock %}

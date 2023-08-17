@@ -1,0 +1,32 @@
+{% extends '_base.html' %}
+
+{% block title %}
+Settings
+{% endblock %}
+
+{% block nav %}
+{% include 'navbar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="right d-flex align-items-center justify-content-center">
+    <div class="right-content">
+        {% if messages %}
+        {% for message in messages %}
+        <p class="alert alert-{{ message.tags }}">{{ message }}</p>
+        {% endfor %}
+        {% endif %}
+
+        <a href="{% url 'user.offline' id=request.session.user_id %}">
+            <button class="w-100 btn-1 btn-with-bg text-white"
+                style="background-color:#F68B1F; color: white;border:none;">Status</button>
+        </a><br>
+
+        <br>
+        <a href="{% url 'user.logout' %}">
+            <button class="w-100 btn-1 btn-with-bg text-white"
+                style="background-color:#F68B1F; color: white;border:none;">Log Out</button>
+        </a><br>
+    </div>
+</div>
+{% endblock %}

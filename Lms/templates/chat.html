@@ -1,0 +1,85 @@
+{% extends '_base.html' %}
+
+{% block title %}
+Chat
+{% endblock %}
+{% block nav %}
+{% include 'navbar.html' %}
+{% endblock %}
+{% block content %}
+<div class="container p-0">
+
+    <h1 class="h3 mb-3">Messages</h1>
+
+    <div class="card">
+        <div class="row g-0">
+            <div class="col-12 col-lg-5 col-xl-3 border-right">
+
+                <div class="px-4 d-none d-md-block">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <input type="text" class="form-control my-3" placeholder="Search...">
+                        </div>
+                    </div>
+                </div>
+                {% if active_users_same_courses %}
+                {% for user in active_users_same_courses %}
+                <a href="#" class="list-group-item list-group-item-action border-0 user-link"
+                    data-user-id="{{ user.id }}">
+                    <div class="d-flex align-items-start">
+                        <img src="{{ user.profile.profile_picture.url }}" class="rounded-circle mr-1"
+                            alt="{{ user.email }}" width="40" height="40">
+                        <div class="flex-grow-1 ml-3">
+                            {{ user.email }}
+                            <div class="small">
+                                {% if user.is_active %}
+                                <span class="fas fa-circle chat-online"></span> Online
+                                {% else %}
+                                <span class="fas fa-circle chat-offline"></span> Offline
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+                {% else %}
+
+                {% endif %}
+
+                <hr class="d-block d-lg-none mt-1 mb-0">
+            </div>
+            <div class="col-12 col-lg-7 col-xl-9" id="chat-container">
+               
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $(".user-link").click(function (e) {
+            e.preventDefault();
+            var userId = $(this).data("user-id");
+            loadChat(userId);
+        });
+
+        function loadChat(userId) {
+            $.ajax({
+                url: `/user/chat/show/${userId}/`,
+                method: "GET",
+                success: function (data) {
+                    $("#chat-container").html(data);
+                },
+                error: function (error) {
+                    console.log("Error loading chat:", error);
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
