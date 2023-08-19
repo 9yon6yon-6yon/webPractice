@@ -13,7 +13,8 @@ from django.urls import reverse
 from django.conf import settings
 from .models import *
 from django.http import HttpResponse
-
+import csv
+from io import TextIOWrapper
 
 
 def createForm(request):
@@ -22,14 +23,40 @@ def createForm(request):
 
 def createUser(request):
     if request.method == 'POST':
+        csv_file = request.FILES.get('csv_file')
+        if csv_file:
+            # Process uploaded CSV file
+            csv_text = TextIOWrapper(csv_file.file, encoding='utf-8')
+            csv_reader = csv.reader(csv_text)
+            for row in csv_reader:
+                # Extract data from CSV row and create users
+                csv_username = row[0]
+                csv_email = row[1]
+                csv_user_type = row[2]
+                csv_phone = row[3]
+
+                csv_user = Users.objects.create_user(
+                    username=csv_username, email=csv_email, password="password", user_type=csv_user_type)
+                csv_user.created_at = timezone.now()
+                csv_user.updated_at = timezone.now()
+                csv_user.save()
+
+                # Create profile
+                csv_profile = Profile.objects.create(
+                    user=csv_user, phone=csv_phone)
+                csv_profile.save()
+
+            messages.success(
+                request, 'Account(s) created successfully from CSV where default password is : password')
+            return redirect('create')
+        # If CSV file is not provided, process form data
+        username = request.POST['userName']
         email = request.POST['email']
         password = request.POST['password']
         user_type = request.POST['type']
-
         phone = request.POST['phone']
-
         user = Users.objects.create_user(
-            email=email, password=password, user_type=user_type)
+            username=username, email=email, password=password, user_type=user_type)
         user.created_at = timezone.now()
         user.updated_at = timezone.now()
         user.save()
@@ -38,7 +65,8 @@ def createUser(request):
         profile = Profile.objects.create(
             user=user, phone=phone, profile_picture=profile_picture)
         profile.save()
-
+    messages.success(
+        request, 'Account created successfully.')
     return redirect('create')
 
 
@@ -66,10 +94,12 @@ def login(request):
             request.session['email'] = user.email
             try:
                 user_profile = Profile.objects.get(user=user)
-                request.session['user_profile_picture'] = user_profile.profile_picture.url
+                if user_profile.profile_picture:
+                    request.session['user_profile_picture'] = user_profile.profile_picture.url
+                else:
+                    request.session['user_profile_picture'] = '/media/profile_pics/default-profile.png'
             except Profile.DoesNotExist:
-                request.session['user_profile_picture'] = None
-
+                request.session['user_profile_picture'] = '/media/profile_pics/default-profile.png'
             return redirect('user.dashboard')
         else:
             messages.error(request, 'Invalid email or password.')
@@ -187,7 +217,8 @@ def save_Password(request):
 
 def home(request):
     user_id = request.session.get('user_id')
-
+    usr = Users.objects.get(id=user_id)
+    user = usr.username
     unread_notification_count = Notification.objects.filter(
         user_id=user_id).count()
     unread_message_count = ChatMessage.objects.filter(
@@ -202,6 +233,7 @@ def home(request):
         'unread_notification_count': unread_notification_count,
         'unread_message_count': unread_message_count,
         'user_profile': user_profile,
+        'user': user
     }
 
     return render(request, 'dashboard.html', context)
@@ -287,44 +319,137 @@ def privateFileDelete(request, id):
     return redirect('user.private.view')
 
 
-
-
 def loadChat(request):
     user_id = request.session.get('user_id')
     user = Users.objects.get(id=user_id)
-    
+
     active_users_same_courses = Users.objects.filter(
         enrolled_courses__in=user.enrolled_courses.all()
     ).exclude(id=user_id)
-    
+
     return render(request, 'chat.html', {'active_users_same_courses': active_users_same_courses})
 
-def loadSpecificChat(request,id):
+
+def loadSpecificChat(request, id):
     logged_in_user_id = request.session.get('user_id')
     logged_in_user = Users.objects.get(id=logged_in_user_id)
-    
+
     selected_user = get_object_or_404(Users, id=id)
-    
-    sent_messages = ChatMessage.objects.filter(sender=logged_in_user, receiver=selected_user)
-    received_messages = ChatMessage.objects.filter(sender=selected_user, receiver=logged_in_user)
-    
-    context = {'selected_user': selected_user, 'sent_messages': sent_messages, 'received_messages': received_messages}
-    chat_content = render_to_string('chat-context.html', context)  
+
+    sent_messages = ChatMessage.objects.filter(
+        sender=logged_in_user, receiver=selected_user)
+    received_messages = ChatMessage.objects.filter(
+        sender=selected_user, receiver=logged_in_user)
+
+    context = {'selected_user': selected_user,
+               'sent_messages': sent_messages, 'received_messages': received_messages}
+    chat_content = render_to_string('chat-context.html', context)
 
     if request.is_ajax():
-        return HttpResponse(chat_content)  
+        return HttpResponse(chat_content)
     else:
         return render(request, 'chat.html', context)
-      
-def sendChat(request,id):
+
+
+def sendChat(request, id):
     if request.method == 'POST':
         logged_in_user_id = request.session.get('user_id')
         logged_in_user = Users.objects.get(id=logged_in_user_id)
         selected_user = get_object_or_404(Users, id=id)
-        
+
         message_text = request.POST.get('message')
-        
+
         if message_text:
-            ChatMessage.objects.create(sender=logged_in_user, receiver=selected_user, message=message_text)
-        
-    return redirect('user.chat.show', id=id) 
+            ChatMessage.objects.create(
+                sender=logged_in_user, receiver=selected_user, message=message_text)
+
+    return redirect('user.chat.show', id=id)
+
+
+def makeAnnouncement(request):
+    return render(request, '')
+
+
+def viewAnnouncement(request, id):
+    return render(request, '')
+
+
+def assignmentCreate(request):
+    return render(request, '')
+
+
+def assignmentView(request, id):
+    return render(request, 'assignment-view.html')
+
+
+def assignmentSubmit(request, id):
+    return render(request, 'assignment-view.html')
+
+
+def assignmentViewAll(request):
+    return render(request, 'assignment-view.html')
+
+
+def assign_faculty_to_students(request):
+    if request.method == 'POST':
+        faculty_id = request.POST.get('faculty')
+        student_ids = request.POST.getlist('students')
+
+        faculty = Users.objects.get(id=faculty_id)
+        students = Users.objects.filter(id__in=student_ids)
+
+        # Assign faculty to students
+        for student in students:
+            student.faculty = faculty
+            student.save()
+
+        messages.success(request, 'Faculty added successfully for students')
+        return redirect('assign.faculty_to_students')
+
+    faculties = Users.objects.filter(user_type='teacher')
+    students = Users.objects.filter(user_type='student')
+    return render(request, 'assign_faculty_to_students.html', {'faculties': faculties, 'students': students})
+
+def assign_courses_to_faculty(request):
+    if request.method == 'POST':
+        faculty_id = request.POST.get('faculty')
+        course_ids = request.POST.getlist('courses')
+
+        faculty = Users.objects.get(id=faculty_id)
+        courses = Course.objects.filter(id__in=course_ids)
+
+        # Assign courses to faculty using the set() method
+        faculty.courses_assigned.set(courses)
+
+        # Redirect to some page after assignment
+        messages.success(request, 'Course added successfully to the faculty')
+        return redirect('assign.courses_to_faculty')
+
+    faculties = Users.objects.filter(user_type='teacher')
+    courses = Course.objects.all()
+    return render(request, 'assign_courses_to_faculty.html', {'faculties': faculties, 'courses': courses})
+
+def courses(request):
+    if request.method == 'POST':
+        course_name = request.POST.get('name')
+        course_category = request.POST.get('category')
+        course_code = request.POST.get('code')
+
+        course_credits = request.POST.get('credits')
+        course_description = request.POST.get('description')
+
+        Course.objects.create(name=course_name, category=course_category,
+                              code=course_code, credits=course_credits, description=course_description)
+        messages.success(request, 'Course added successfully')
+        return redirect('add-course')
+
+    courses = Course.objects.all()
+    context = {'courses': courses}
+    return render(request, 'courses.html', context)
+
+
+def deletecourse(request, id):
+    course = get_object_or_404(Course, id=id)
+    course.delete()
+    messages.success(request, 'Course deleted')
+    return redirect('add-course')

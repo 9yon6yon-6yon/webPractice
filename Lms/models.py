@@ -13,6 +13,7 @@ class CustomUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 class Users(AbstractBaseUser):
+    username = models.CharField(max_length=30)
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=255)
     USER_TYPES = [
@@ -52,18 +53,30 @@ class ChatMessage(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
 class Course(models.Model):
+    CATEGORY_CHOICES = (
+        ('A', 'Language'),
+        ('B', 'General Education'),
+        ('C', 'Basic Sciences'),
+        ('D', 'Mathematics'),
+        ('E', 'Other Engineering'),
+        ('F', 'Core Courses'),
+        ('G', 'Elective Courses'),
+        ('H', 'University required courses'),
+        ('I', 'Final Year Design Project'),
+    )
+
     name = models.CharField(max_length=255)
-    faculty = models.ForeignKey(Users, on_delete=models.CASCADE)
+    category = models.CharField(max_length=1, choices=CATEGORY_CHOICES)
+    credits = models.DecimalField(max_digits=4, decimal_places=1, default=3.0)
+    code = models.CharField(max_length=10)
+    description = models.TextField()
+    faculty = models.ManyToManyField(Users, related_name='courses_assigned', blank=True)
     students = models.ManyToManyField(Users, related_name='enrolled_courses', blank=True)
-    start_date = models.DateField()
-    end_date = models.DateField()
-    syllabus = models.TextField()
     resources = models.ManyToManyField('Resource', related_name='courses', blank=True)
     announcements = models.ManyToManyField('Announcement', related_name='courses', blank=True)
 
     def __str__(self):
         return self.name
-
 class Marking(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     student = models.ForeignKey(Users, on_delete=models.CASCADE)
@@ -126,3 +139,4 @@ class PasswordResetToken(models.Model):
 
     def __str__(self):
         return f"Password reset token for {self.email}"
+  

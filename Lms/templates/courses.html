@@ -1,0 +1,123 @@
+{% extends '_base.html' %}
+
+{% block title %}
+Course Management
+{% endblock %}
+{% block nav %}
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+       
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'create' %}">Create</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'assign.faculty_to_students' %}">Assign Faculty to Students</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'assign.courses_to_faculty' %}">Assign Courses to Faculty</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'add-course' %}">Add Course</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+{% endblock %}
+
+{% block content %}
+<section class="section courses min-vh-100 d-flex flex-column align-items-center justify-content-center py-4">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card">
+                    <div class="card-header">
+                        Course Management
+                    </div>
+                    <div class="card-body">
+                       
+                        <h5 class="card-title">Add Course</h5>
+                        {% if messages %}
+                        {% for message in messages %}
+                        <p class="alert alert-{{ message.tags }}">{{ message }}</p>
+                        {% endfor %}
+                        {% endif %}
+                        <form method="POST" action="{% url 'add-course' %}" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Course Name</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="category" class="form-label">Category</label>
+                                <select class="form-select" id="category" name="category" required>
+                                    <option value="" selected disabled>Select Category</option>
+                                    <option value="A">Language</option>
+                                    <option value="B">General Education</option>
+                                    <option value="C">Basic Sciences</option>
+                                    <option value="D">Mathematics</option>
+                                    <option value="E">Other Engineering</option>
+                                    <option value="F">Core Courses</option>
+                                    <option value="G">Elective Courses</option>
+                                    <option value="H">University required courses</option>
+                                    <option value="I">Final Year Design Project</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="credits" class="form-label">Credits</label>
+                                <input type="number" class="form-control" id="credits" name="credits" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="code" class="form-label">Course Code</label>
+                                <input type="text" class="form-control" id="code" name="code" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <textarea class="form-control" id="description" name="description" rows="3"
+                                    required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Course</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Courses</h5>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Course Name</th>
+                                    <th>Category</th>
+                                    <th>Credits</th>
+                                    <th>Course Code</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for course in courses %}
+                                <tr>
+                                    <td>{{ course.name }}</td>
+                                    <td>{{ course.get_category_display }}</td>
+                                    <td>{{ course.credits }}</td>
+                                    <td>{{ course.code }}</td>
+                                    <td>
+                                        <a href="#" class="btn btn-sm btn-primary">Edit</a>
+                                        <a href="{% url 'delete-course' course.id %}"
+                                            class="btn btn-sm btn-danger">Delete</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

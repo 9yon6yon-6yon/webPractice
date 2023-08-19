@@ -1,0 +1,60 @@
+{% extends '_base.html' %}
+
+{% block title %}
+Student to Faculty
+{% endblock %}
+{% block nav %}
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+        
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'create' %}">Create</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'assign.faculty_to_students' %}">Assign Faculty to Students</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'assign.courses_to_faculty' %}">Assign Courses to Faculty</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'add-course' %}">Add Course</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+{% endblock %}
+{% block content %}
+<div class="container">
+    {% if messages %}
+                        {% for message in messages %}
+                        <p class="alert alert-{{ message.tags }}">{{ message }}</p>
+                        {% endfor %}
+                        {% endif %}
+    <h2>Assign Faculty to Students</h2>
+    <form action="{% url 'assign.faculty_to_students' %}" method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="faculty">Faculty:</label>
+            <select class="form-control" id="faculty" name="faculty">
+                {% for faculty in faculties %}
+                <option value="{{ faculty.id }}">{{ faculty.email }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="students">Students:</label>
+            <select multiple class="form-control" id="students" name="students">
+                {% for student in students %}
+                <option value="{{ student.id }}">{{ student.email }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Assign</button>
+    </form>
+</div>
+{% endblock %}
