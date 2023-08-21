@@ -100,6 +100,8 @@ def login(request):
                     request.session['user_profile_picture'] = '/media/profile_pics/default-profile.png'
             except Profile.DoesNotExist:
                 request.session['user_profile_picture'] = '/media/profile_pics/default-profile.png'
+            print("user_id:", user.id)
+            print("email:", user.email)
             return redirect('user.dashboard')
         else:
             messages.error(request, 'Invalid email or password.')
@@ -214,11 +216,9 @@ def save_Password(request):
         }
         return render(request, 'change-password.html', context)
 
-
 def home(request):
     user_id = request.session.get('user_id')
-    usr = Users.objects.get(id=user_id)
-    user = usr.username
+    user = Users.objects.get(id=user_id)
     unread_notification_count = Notification.objects.filter(
         user_id=user_id).count()
     unread_message_count = ChatMessage.objects.filter(
@@ -229,11 +229,30 @@ def home(request):
     except Profile.DoesNotExist:
         user_profile = None
 
+    faculty = None
+    courses_teaching = None
+    student_courses = None
+    student = None
+    enrolled_courses = None
+
+    if user.user_type == 'faculty':
+        faculty = user
+        courses_teaching = faculty.courses_assigned.all()
+        student_courses = faculty.assigned_students.all()
+    elif user.user_type == 'student':
+        student = user
+        enrolled_courses = student.enrolled_courses.all()
+
     context = {
         'unread_notification_count': unread_notification_count,
         'unread_message_count': unread_message_count,
         'user_profile': user_profile,
-        'user': user
+        'user': user,
+        'faculty': faculty,
+        'student': student,
+        'courses_teaching': courses_teaching,
+        'student_courses': student_courses,
+        'enrolled_courses': enrolled_courses,
     }
 
     return render(request, 'dashboard.html', context)
@@ -389,7 +408,6 @@ def assignmentSubmit(request, id):
 def assignmentViewAll(request):
     return render(request, 'assignment-view.html')
 
-
 def assign_faculty_to_students(request):
     if request.method == 'POST':
         faculty_id = request.POST.get('faculty')
@@ -398,18 +416,18 @@ def assign_faculty_to_students(request):
         faculty = Users.objects.get(id=faculty_id)
         students = Users.objects.filter(id__in=student_ids)
 
-        # Assign faculty to students
-        for student in students:
+        unassigned_students = students.filter(faculty__isnull=True)
+
+        for student in unassigned_students:
             student.faculty = faculty
             student.save()
 
         messages.success(request, 'Faculty added successfully for students')
         return redirect('assign.faculty_to_students')
 
-    faculties = Users.objects.filter(user_type='teacher')
-    students = Users.objects.filter(user_type='student')
+    faculties = Users.objects.filter(user_type='faculty')
+    students = Users.objects.filter(user_type='student', faculty__isnull=True)
     return render(request, 'assign_faculty_to_students.html', {'faculties': faculties, 'students': students})
-
 def assign_courses_to_faculty(request):
     if request.method == 'POST':
         faculty_id = request.POST.get('faculty')
@@ -418,14 +436,14 @@ def assign_courses_to_faculty(request):
         faculty = Users.objects.get(id=faculty_id)
         courses = Course.objects.filter(id__in=course_ids)
 
-        # Assign courses to faculty using the set() method
-        faculty.courses_assigned.set(courses)
+        unassigned_courses = courses.exclude(faculty=faculty)
 
-        # Redirect to some page after assignment
+        faculty.courses_assigned.set(unassigned_courses)
+
         messages.success(request, 'Course added successfully to the faculty')
         return redirect('assign.courses_to_faculty')
 
-    faculties = Users.objects.filter(user_type='teacher')
+    faculties = Users.objects.filter(user_type='faculty')
     courses = Course.objects.all()
     return render(request, 'assign_courses_to_faculty.html', {'faculties': faculties, 'courses': courses})
 

@@ -15,11 +15,13 @@ class CustomUserManager(BaseUserManager):
 class Users(AbstractBaseUser):
     username = models.CharField(max_length=30)
     email = models.EmailField(unique=True)
+    USERNAME_FIELD = 'email'
     password = models.CharField(max_length=255)
     USER_TYPES = [
         ('student', 'Student'),
-        ('teacher', 'Teacher'),
+        ('faculty', 'Faculty'),
     ]
+    faculty = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_students')
     user_type = models.CharField(choices=USER_TYPES, max_length=10, default='student')
     is_active = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)

@@ -58,7 +58,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'WEB.urls'
 LOGIN_URL = 'user-login'
-
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',

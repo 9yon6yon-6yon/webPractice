@@ -3,13 +3,60 @@
 {% load static %}
 
 {% block title %}
-    Home
+Home
 {% endblock %}
 
 {% block nav %}
-    {% include 'navbar.html' %}
+{% include 'navbar.html' %}
 {% endblock %}
 
 {% block content %}
+
+<div class="container">
+    {% if faculty %}
+    <h3>Courses You're Teaching</h3>
+    <div class="row">
+        {% for course in courses_teaching %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ course.name }}</h5>
+                    <p class="card-text">{{ course.code }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <h3>Courses Your Students Are Enrolled In</h3>
+    <div class="row">
+        {% for course in student_courses %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ course.name }}</h5>
+                    <p class="card-text">{{ course.code }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if student %}
+    <h3>Your Enrolled Courses:</h3>
+    <div class="card-deck">
+        {% for course in enrolled_courses %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">{{ course.name }}</h5>
+                <p class="card-text">Code: {{ course.code }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
 
 {% endblock %}
