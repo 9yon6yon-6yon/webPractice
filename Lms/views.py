@@ -30,13 +30,13 @@ def createUser(request):
             csv_reader = csv.reader(csv_text)
             for row in csv_reader:
                 # Extract data from CSV row and create users
-                csv_username = row[0]
+                # csv_username = row[0]
                 csv_email = row[1]
                 csv_user_type = row[2]
                 csv_phone = row[3]
 
                 csv_user = Users.objects.create_user(
-                    username=csv_username, email=csv_email, password="password", user_type=csv_user_type)
+                     email=csv_email, password="password", user_type=csv_user_type)
                 csv_user.created_at = timezone.now()
                 csv_user.updated_at = timezone.now()
                 csv_user.save()
@@ -50,13 +50,13 @@ def createUser(request):
                 request, 'Account(s) created successfully from CSV where default password is : password')
             return redirect('create')
         # If CSV file is not provided, process form data
-        username = request.POST['userName']
+        # username = request.POST['userName']
         email = request.POST['email']
         password = request.POST['password']
         user_type = request.POST['type']
         phone = request.POST['phone']
         user = Users.objects.create_user(
-            username=username, email=email, password=password, user_type=user_type)
+            email=email, password=password, user_type=user_type)
         user.created_at = timezone.now()
         user.updated_at = timezone.now()
         user.save()
@@ -265,8 +265,6 @@ def changePassword(request):
 def user_profile_view(request, user_id):
     user = get_object_or_404(Users, id=user_id)
 
-    unread_notification_count = Notification.objects.filter(user=user).count()
-    unread_message_count = ChatMessage.objects.filter(receiver=user).count()
 
     try:
         user_profile = Profile.objects.get(user=user)
@@ -275,8 +273,6 @@ def user_profile_view(request, user_id):
 
     context = {
         'user': user,
-        'unread_notification_count': unread_notification_count,
-        'unread_message_count': unread_message_count,
         'user_profile': user_profile,
     }
 
