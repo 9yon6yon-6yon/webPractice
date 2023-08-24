@@ -9,24 +9,26 @@ Settings
 {% endblock %}
 
 {% block content %}
-<div class="right d-flex align-items-center justify-content-center">
-    <div class="right-content">
-        {% if messages %}
+<div class="right-content"  style="margin-top: 100px;padding: 100px;">
+    {% if messages %}
+    <div class="alert alert-info">
         {% for message in messages %}
-        <p class="alert alert-{{ message.tags }}">{{ message }}</p>
+        {{ message }}
         {% endfor %}
-        {% endif %}
+    </div>
+    {% endif %}
 
-        <a href="{% url 'user.offline' id=request.session.user_id %}">
-            <button class="w-100 btn-1 btn-with-bg text-white"
-                style="background-color:#F68B1F; color: white;border:none;">Status</button>
-        </a><br>
+    <div class="card mb-3">
+        <div class="card-body">
+            <a href="{% url 'user.offline' id=request.session.user_id %}" class="btn btn-primary btn-block"
+                style="background-color:#F68B1F; color: white;">Status</a>
+        </div>
 
-        <br>
-        <a href="{% url 'user.logout' %}">
-            <button class="w-100 btn-1 btn-with-bg text-white"
-                style="background-color:#F68B1F; color: white;border:none;">Log Out</button>
-        </a><br>
+        <div class="card-body">
+            <a href="{% url 'user.logout' %}" class="btn btn-primary btn-block"
+                style="background-color:#F68B1F; color: white;">Log Out</a>
+        </div>
     </div>
 </div>
+
 {% endblock %}

@@ -20,7 +20,6 @@ class Users(AbstractBaseUser):
         ('student', 'Student'),
         ('faculty', 'Faculty'),
     ]
-    faculty = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_students')
     user_type = models.CharField(choices=USER_TYPES, max_length=10, default='student')
     is_active = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)

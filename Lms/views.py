@@ -254,6 +254,7 @@ def home(request):
         'student_courses': student_courses,
         'enrolled_courses': enrolled_courses,
     }
+    print(context)
 
     return render(request, 'dashboard.html', context)
 
@@ -404,44 +405,35 @@ def assignmentSubmit(request, id):
 def assignmentViewAll(request):
     return render(request, 'assignment-view.html')
 
-def assign_faculty_to_students(request):
-    if request.method == 'POST':
-        faculty_id = request.POST.get('faculty')
-        student_ids = request.POST.getlist('students')
-
-        faculty = Users.objects.get(id=faculty_id)
-        students = Users.objects.filter(id__in=student_ids)
-
-        unassigned_students = students.filter(faculty__isnull=True)
-
-        for student in unassigned_students:
-            student.faculty = faculty
-            student.save()
-
-        messages.success(request, 'Faculty added successfully for students')
-        return redirect('assign.faculty_to_students')
-
-    faculties = Users.objects.filter(user_type='faculty')
-    students = Users.objects.filter(user_type='student', faculty__isnull=True)
-    return render(request, 'assign_faculty_to_students.html', {'faculties': faculties, 'students': students})
 def assign_courses_to_faculty(request):
     if request.method == 'POST':
         faculty_id = request.POST.get('faculty')
         course_ids = request.POST.getlist('courses')
-
+        student_ids = request.POST.getlist('students')
         faculty = Users.objects.get(id=faculty_id)
         courses = Course.objects.filter(id__in=course_ids)
+        print(faculty_id)
+        print(course_ids)
+        print(student_ids)
+        students = Users.objects.filter(id__in=student_ids)
+       
+
+        for student in students:
+            student.faculty = faculty
+            student.save()
 
         unassigned_courses = courses.exclude(faculty=faculty)
 
         faculty.courses_assigned.set(unassigned_courses)
+        student.enrolled_courses.set(unassigned_courses)
 
         messages.success(request, 'Course added successfully to the faculty')
         return redirect('assign.courses_to_faculty')
 
     faculties = Users.objects.filter(user_type='faculty')
     courses = Course.objects.all()
-    return render(request, 'assign_courses_to_faculty.html', {'faculties': faculties, 'courses': courses})
+    students = Users.objects.filter(user_type='student')
+    return render(request, 'assign_courses_to_faculty.html', {'faculties': faculties, 'courses': courses, 'students': students})
 
 def courses(request):
     if request.method == 'POST':

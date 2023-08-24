@@ -43,8 +43,6 @@ urlpatterns = [
     path('user/assignment-view-submissions/',
          assignmentViewAll, name='assignmentViewAll'),
     # assign courses to faculty and students by admin
-    path('assign-faculty-to-students/', assign_faculty_to_students,
-         name='assign.faculty_to_students'),
     path('assign-courses-to-faculty/', assign_courses_to_faculty,
          name='assign.courses_to_faculty'),
     path('courses/add/', courses, name='add-course'),

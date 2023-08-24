@@ -11,26 +11,11 @@ Home
 {% endblock %}
 
 {% block content %}
-
 <div class="container">
     {% if faculty %}
     <h3>Courses You're Teaching</h3>
     <div class="row">
         {% for course in courses_teaching %}
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">{{ course.name }}</h5>
-                    <p class="card-text">{{ course.code }}</p>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-
-    <h3>Courses Your Students Are Enrolled In</h3>
-    <div class="row">
-        {% for course in student_courses %}
         <div class="col-md-4 mb-4">
             <div class="card">
                 <div class="card-body">
@@ -56,7 +41,21 @@ Home
         {% endfor %}
     </div>
     {% endif %}
+
+    {% if faculty %}
+    <h3>Courses Your Students Are Enrolled In</h3>
+    <div class="row">
+        {% for course in student_courses %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ course.name }}</h5>
+                    <p class="card-text">{{ course.code }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 </div>
-
-
 {% endblock %}
