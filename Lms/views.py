@@ -349,19 +349,21 @@ def loadSpecificChat(request, id):
     selected_user = get_object_or_404(Users, id=id)
 
     sent_messages = ChatMessage.objects.filter(
-        sender=logged_in_user, receiver=selected_user)
+        sender_id=logged_in_user, receiver_id=selected_user)
     received_messages = ChatMessage.objects.filter(
-        sender=selected_user, receiver=logged_in_user)
+        sender_id=selected_user, receiver_id=logged_in_user)
 
-    context = {'selected_user': selected_user,
-               'sent_messages': sent_messages, 'received_messages': received_messages}
+    all_messages = list(sent_messages) + list(received_messages)
+    all_messages.sort(key=lambda x: x.timestamp, reverse=False)
+
+    context = {'selected_user': selected_user, 'all_messages': all_messages}
     chat_content = render_to_string('chat-context.html', context)
 
     if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
         return HttpResponse(chat_content)
     else:
         return render(request, 'chat.html', context)
-
+    
 def sendChat(request, id):
     if request.method == 'POST':
         logged_in_user_id = request.session.get('user_id')

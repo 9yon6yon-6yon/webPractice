@@ -10,35 +10,24 @@
         </div>
     </div>
 </div>
-
 <div class="position-relative">
     <div class="chat-messages p-4">
-        {% for message in sent_messages %}
-        <div class="chat-message-right pb-4">
-            <div>
-                <img src="{{ message.sender.profile_picture.url }}" class="rounded-circle mr-1"
-                    alt="" width="40" height="40">
-                <div class="text-muted small text-nowrap mt-2">{{ message.timestamp }}</div>
+        {% for message in all_messages %}
+            <div class="chat-message {% if message.sender == selected_user %}chat-message-left{% else %}chat-message-right{% endif %} pb-4">
+                <div>
+                    <img src="{{ message.sender.profile_picture.url }}" class="rounded-circle mr-1"
+                        alt="" width="40" height="40">
+                    <div class="text-muted small text-nowrap mt-2">{{ message.timestamp }}</div>
+                </div>
+                <div class="flex-shrink-1 bg-light rounded py-2 px-3 {% if message.sender == selected_user %}ml-3{% else %}mr-3{% endif %}">
+                    {% if message.sender == selected_user %}
+                        <div class="font-weight-bold mb-1">{{ message.sender.email }}</div>
+                    {% else %}
+                        <div class="font-weight-bold mb-1">You</div>
+                    {% endif %}
+                    {{ message.message }}
+                </div>
             </div>
-            <div class="flex-shrink-1 bg-light rounded py-2 px-3 mr-3">
-                <div class="font-weight-bold mb-1">You</div>
-                {{ message.message }}
-            </div>
-        </div>
-        {% endfor %}
-
-        {% for message in received_messages %}
-        <div class="chat-message-left pb-4">
-            <div>
-                <img src="{{ message.sender.profile_picture.url }}" class="rounded-circle mr-1"
-                    alt="" width="40" height="40">
-                <div class="text-muted small text-nowrap mt-2">{{ message.timestamp }}</div>
-            </div>
-            <div class="flex-shrink-1 bg-light rounded py-2 px-3 ml-3">
-                <div class="font-weight-bold mb-1">{{ message.sender.email }}</div>
-                {{ message.message }}
-            </div>
-        </div>
         {% endfor %}
     </div>
 </div>
