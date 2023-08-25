@@ -100,8 +100,6 @@ def login(request):
                     request.session['user_profile_picture'] = '/media/profile_pics/default-profile.png'
             except Profile.DoesNotExist:
                 request.session['user_profile_picture'] = '/media/profile_pics/default-profile.png'
-            print("user_id:", user.id)
-            print("email:", user.email)
             return redirect('user.dashboard')
         else:
             messages.error(request, 'Invalid email or password.')
@@ -254,7 +252,6 @@ def home(request):
         'student_courses': student_courses,
         'enrolled_courses': enrolled_courses,
     }
-    print(context)
 
     return render(request, 'dashboard.html', context)
 
@@ -339,8 +336,7 @@ def loadChat(request):
     user_id = request.session.get('user_id')
     user = Users.objects.get(id=user_id)
 
-    active_users_same_courses = Users.objects.filter(
-        enrolled_courses__in=user.enrolled_courses.all()
+    active_users_same_courses = Users.objects.filter(    
     ).exclude(id=user_id)
 
     return render(request, 'chat.html', {'active_users_same_courses': active_users_same_courses})
@@ -361,11 +357,10 @@ def loadSpecificChat(request, id):
                'sent_messages': sent_messages, 'received_messages': received_messages}
     chat_content = render_to_string('chat-context.html', context)
 
-    if request.is_ajax():
+    if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
         return HttpResponse(chat_content)
     else:
         return render(request, 'chat.html', context)
-
 
 def sendChat(request, id):
     if request.method == 'POST':
@@ -374,7 +369,8 @@ def sendChat(request, id):
         selected_user = get_object_or_404(Users, id=id)
 
         message_text = request.POST.get('message')
-
+        print(message_text)
+        print(selected_user)
         if message_text:
             ChatMessage.objects.create(
                 sender=logged_in_user, receiver=selected_user, message=message_text)
@@ -412,9 +408,6 @@ def assign_courses_to_faculty(request):
         student_ids = request.POST.getlist('students')
         faculty = Users.objects.get(id=faculty_id)
         courses = Course.objects.filter(id__in=course_ids)
-        print(faculty_id)
-        print(course_ids)
-        print(student_ids)
         students = Users.objects.filter(id__in=student_ids)
        
 

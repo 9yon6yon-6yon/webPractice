@@ -1,8 +1,9 @@
+{% load static %}
 <div class="py-2 px-4 border-bottom d-none d-lg-block">
     <div class="d-flex align-items-center py-1">
         <div class="position-relative">
             <img src="{{ selected_user.profile_picture.url }}" class="rounded-circle mr-1"
-                alt="{{ selected_user.email }}" width="40" height="40">
+                alt="" width="40" height="40">
         </div>
         <div class="flex-grow-1 pl-3">
             <strong>{{ selected_user.email }}</strong>
@@ -16,7 +17,7 @@
         <div class="chat-message-right pb-4">
             <div>
                 <img src="{{ message.sender.profile_picture.url }}" class="rounded-circle mr-1"
-                    alt="{{ message.sender.email }}" width="40" height="40">
+                    alt="" width="40" height="40">
                 <div class="text-muted small text-nowrap mt-2">{{ message.timestamp }}</div>
             </div>
             <div class="flex-shrink-1 bg-light rounded py-2 px-3 mr-3">
@@ -30,7 +31,7 @@
         <div class="chat-message-left pb-4">
             <div>
                 <img src="{{ message.sender.profile_picture.url }}" class="rounded-circle mr-1"
-                    alt="{{ message.sender.email }}" width="40" height="40">
+                    alt="" width="40" height="40">
                 <div class="text-muted small text-nowrap mt-2">{{ message.timestamp }}</div>
             </div>
             <div class="flex-shrink-1 bg-light rounded py-2 px-3 ml-3">
@@ -41,13 +42,13 @@
         {% endfor %}
     </div>
 </div>
-
 <div class="flex-grow-0 py-3 px-4 border-top">
-    <form method="post" action="{% url 'user.chat.send' id=selected_user.id  %}">
+    <form method="post" id="chat-form">
         {% csrf_token %}
         <div class="input-group">
-            <input type="text" class="form-control" name="message" placeholder="Type your message">
-            <button class="btn btn-primary">Send</button>
+            <input type="text" class="form-control" name="message" id="message"
+                placeholder="Type your message">
+            <button type="submit" class="btn btn-primary">Send</button>
         </div>
     </form>
 </div>

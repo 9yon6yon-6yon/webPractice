@@ -6,15 +6,13 @@ Chat
 {% block nav %}
 {% include 'navbar.html' %}
 {% endblock %}
+{% load static %}
 {% block content %}
 <div class="container p-0">
-
     <h1 class="h3 mb-3">Messages</h1>
-
     <div class="card">
         <div class="row g-0">
             <div class="col-12 col-lg-5 col-xl-3 border-right">
-
                 <div class="px-4 d-none d-md-block">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
@@ -23,42 +21,48 @@ Chat
                     </div>
                 </div>
                 {% if active_users_same_courses %}
-                {% for user in active_users_same_courses %}
-                <a href="#" class="list-group-item list-group-item-action border-0 user-link"
-                    data-user-id="{{ user.id }}">
-                    <div class="d-flex align-items-start">
-                        <img src="{{ user.profile.profile_picture.url }}" class="rounded-circle mr-1"
-                            alt="{{ user.email }}" width="40" height="40">
-                        <div class="flex-grow-1 ml-3">
-                            {{ user.email }}
-                            <div class="small">
-                                {% if user.is_active %}
-                                <span class="fas fa-circle chat-online"></span> Online
-                                {% else %}
-                                <span class="fas fa-circle chat-offline"></span> Offline
-                                {% endif %}
+                <div class="list-group">
+                    {% for user in active_users_same_courses %}
+                    <a href="#" class="list-group-item list-group-item-action border-0 user-link"
+                        data-user-id="{{ user.id }}">
+                        <div class="d-flex align-items-start">
+                            {% if user.profile.profile_picture %}
+                            <img src="{{ user.profile.profile_picture.url }}" class="rounded-circle mr-1"
+                                alt="{{ user.email }}" width="40" height="40">
+                            {% else %}
+                            <img src="{% static './media/profile_pics/default-profile.png' %}"
+                                class="rounded-circle mr-1" alt="Default Image" width="40" height="40">
+                            {% endif %}
+                            <div class="flex-grow-1 ml-3">
+                                {{ user.email }}
+                                <div class="small">
+                                    {% if user.is_active %}
+                                    <span class="fas fa-circle chat-online">Online</span>
+                                    {% else %}
+                                    <span class="fas fa-circle chat-offline">Offline</span>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </a>
-                {% endfor %}
+                    </a>
+                    {% endfor %}
+                </div>
                 {% else %}
-
+                <h2>No users found</h2>
                 {% endif %}
-
                 <hr class="d-block d-lg-none mt-1 mb-0">
             </div>
             <div class="col-12 col-lg-7 col-xl-9" id="chat-container">
-               
+                <div id="chat-messages">
+                    {% include 'chat-context.html' %}
+                </div>
             </div>
         </div>
     </div>
 </div>
-
 {% endblock %}
 
 {% block script %}
-
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function () {
@@ -73,12 +77,64 @@ Chat
                 url: `/user/chat/show/${userId}/`,
                 method: "GET",
                 success: function (data) {
-                    $("#chat-container").html(data);
+                    $("#chat-messages").html(data); // Replace existing content
+                    setupChatForm(userId);
                 },
                 error: function (error) {
                     console.log("Error loading chat:", error);
                 }
             });
+        }
+
+        function setupChatForm(userId) {
+            var chatForm = $("#chat-form");
+            if (!chatForm.data("event-bound")) {
+                chatForm.on("submit", function (e) {
+                    e.preventDefault();
+                    sendMessage(userId);
+                });
+                chatForm.data("event-bound", true);
+            }
+        }
+
+        function sendMessage(userId) {
+            var messageInput = $("#message").val();
+            if (!messageInput) {
+                return;
+            }
+            $.ajax({
+                url: `/user/chat/send/${userId}/`,
+                method: "POST",
+                data: {
+                    message: messageInput
+                },
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken")
+                },
+                success: function () {
+                    $("#message").val("");
+                    loadChat(userId);
+                },
+                error: function (error) {
+                    console.log("Error sending message:", error);
+                }
+            });
+        }
+
+        // Function to get CSRF token from cookies
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== "") {
+                var cookies = document.cookie.split(";");
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
         }
     });
 </script>
