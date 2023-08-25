@@ -3,6 +3,30 @@
 {% block title %}
     Assignment
 {% endblock %}
+{% block nav %}
+{% include 'navbar.html' %}
+{% endblock %}
 {% block content %}
+<div class="card">
+    <div class="card-header">
+        Assignment: {{ assignment.title }}
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">Course: {{ course.name }}</h5>
+        <p class="card-text">{{ assignment.description }}</p>
+        <p class="card-text">Due Date: {{ assignment.due_date }}</p>
+        <p class="card-text">Max Marks: {{ assignment.max_marks }}</p>
+        <!-- You can display more assignment details here -->
+
+        <form method="post" action="{% url 'assignmentSubmit' course.id assignment.id %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="submission_file" class="form-label">Upload File</label>
+                <input type="file" class="form-control" id="submission_file" name="file_upload" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Assignment</button>
+        </form>
+    </div>
+</div>
 
 {% endblock %}

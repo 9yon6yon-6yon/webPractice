@@ -1,8 +1,72 @@
 {% extends '_base.html' %}
 
 {% block title %}
-    Courses
+Course View
 {% endblock %}
 {% block content %}
 
+{% block nav %}
+{% include 'navbar.html' %}
+{% endblock %}
+<div class="container">
+    <h2>{{ course.name }}</h2>
+
+
+    <div class="row">
+        {% if is_faculty %}
+        <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="facultyActionsDropdown"
+                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Faculty Actions
+            </button>
+            <div class="dropdown-menu" aria-labelledby="facultyActionsDropdown">
+                <a class="dropdown-item" href="{% url 'makeAnnouncement' course.id %}">Make Announcement</a>
+                <a class="dropdown-item" href="{% url 'assignmentCreate' course.id %}">Create Assignment</a>
+                <a class="dropdown-item" href="{% url 'resourceCreate' course.id %}">Upload Resource</a>
+            </div>
+        </div>
+        {% endif %}
+        <div class="col-md-6">
+            <h3>Resources</h3>
+            <ul class="list-group">
+                {% for resource in resources %}
+                <li class="list-group-item">
+                    <strong>Title:</strong> {{ resource.title }}<br>
+                    <strong>Description:</strong> {{ resource.description }}<br>
+                    <strong>Resource Type:</strong> {{ resource.resource_type }}<br>
+                    <a href="{{ resource.file_upload.url }}" target="_blank">Download</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="col-md-6">
+            <h3>Announcements</h3>
+            <ul class="list-group">
+                {% for announcement in announcements %}
+                <li class="list-group-item">
+                    <strong>Title:</strong> {{ announcement.title }}<br>
+                    <strong>Content:</strong> {{ announcement.content }}<br>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="col-md-12">
+            <h3>Assignments</h3>
+            <ul class="list-group">
+                {% for assignment in assignments %}
+                <li class="list-group-item">
+                    <strong>Title:</strong> {{ assignment.title }}<br>
+                    <strong>Description:</strong> {{ assignment.description }}<br>
+                    <strong>Due Date:</strong> {{ assignment.due_date }}<br>
+                    <a href="{% url 'assignmentView' course.id assignment.id %}">View Assignment</a>
+                    <a href="{% url 'assignmentViewAll' course.id assignment.id %}">View Submissions</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+    </div>
+</div>
 {% endblock %}

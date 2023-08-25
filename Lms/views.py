@@ -36,7 +36,7 @@ def createUser(request):
                 csv_phone = row[3]
 
                 csv_user = Users.objects.create_user(
-                     email=csv_email, password="password", user_type=csv_user_type)
+                    email=csv_email, password="password", user_type=csv_user_type)
                 csv_user.created_at = timezone.now()
                 csv_user.updated_at = timezone.now()
                 csv_user.save()
@@ -214,6 +214,7 @@ def save_Password(request):
         }
         return render(request, 'change-password.html', context)
 
+
 def home(request):
     user_id = request.session.get('user_id')
     user = Users.objects.get(id=user_id)
@@ -236,7 +237,7 @@ def home(request):
     if user.user_type == 'faculty':
         faculty = user
         courses_teaching = faculty.courses_assigned.all()
-        student_courses = faculty.assigned_students.all()
+        # student_courses = faculty.assigned_students.all()
     elif user.user_type == 'student':
         student = user
         enrolled_courses = student.enrolled_courses.all()
@@ -262,7 +263,6 @@ def changePassword(request):
 
 def user_profile_view(request, user_id):
     user = get_object_or_404(Users, id=user_id)
-
 
     try:
         user_profile = Profile.objects.get(user=user)
@@ -336,7 +336,7 @@ def loadChat(request):
     user_id = request.session.get('user_id')
     user = Users.objects.get(id=user_id)
 
-    active_users_same_courses = Users.objects.filter(    
+    active_users_same_courses = Users.objects.filter(
     ).exclude(id=user_id)
 
     return render(request, 'chat.html', {'active_users_same_courses': active_users_same_courses})
@@ -363,7 +363,8 @@ def loadSpecificChat(request, id):
         return HttpResponse(chat_content)
     else:
         return render(request, 'chat.html', context)
-    
+
+
 def sendChat(request, id):
     if request.method == 'POST':
         logged_in_user_id = request.session.get('user_id')
@@ -380,28 +381,96 @@ def sendChat(request, id):
     return redirect('user.chat.show', id=id)
 
 
-def makeAnnouncement(request):
-    return render(request, '')
+def makeAnnouncement(request, cid):
+    course = get_object_or_404(Course, id=cid)
+
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        content = request.POST.get('content')
+        announcement = Announcement.objects.create(
+            course=course, title=title, content=content)
+
+        return redirect('course.view', cid=course.id)
+
+    context = {
+        'course': course,
+    }
+    return render(request, 'announcements.html', context)
 
 
-def viewAnnouncement(request, id):
-    return render(request, '')
+def viewAnnouncement(request, cid, aid):
+    course = get_object_or_404(Course, id=cid)
+    announcement = get_object_or_404(Announcement, id=aid, course_id=cid)
+
+    context = {
+        'course': course,
+        'announcement': announcement,
+    }
+    return render(request, 'announcements.html', context)
 
 
-def assignmentCreate(request):
-    return render(request, '')
+def assignmentCreate(request, cid):
+    course = get_object_or_404(Course, id=cid)
+
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        description = request.POST.get('description')
+        due_date = request.POST.get('due_date')
+        max_marks = request.POST.get('max_marks')
+        assignment = Assignment.objects.create(
+            course=course,
+            title=title,
+            description=description,
+            due_date=due_date,
+            max_marks=max_marks
+        )
+
+        return redirect('course.view', cid=course.id)
+
+    context = {
+        'course': course,
+    }
+    return render(request, 'assignment-form.html', context)
 
 
-def assignmentView(request, id):
+def assignmentView(request, cid, aid):
+    course = get_object_or_404(Course, id=cid)
+    assignment = get_object_or_404(Assignment, id=aid, course=course)
+
+    context = {
+        'course': course,
+        'assignment': assignment,
+    }
+    return render(request, 'assignment-view.html', context)
+
+
+def assignmentSubmit(request, cid, aid):
+
+    course = get_object_or_404(Course, id=cid)
+    assignment = get_object_or_404(Assignment, id=aid, course=course)
+
+    if request.method == 'POST':
+        submission_file = request.FILES.get('file_upload')
+        user_id = request.session.get('user_id')
+
+        user = Users.objects.get(id=user_id)
+        submission = Submission.objects.create(
+            assignment=assignment,
+            student=user,
+            file_upload=submission_file
+        )
+       
+        return redirect('course.view', cid=course.id)
+
+    context = {
+        'course': course,
+        'assignment': assignment,
+    }
+    return render(request, 'assignment-submissions.html', context)
+
+def assignmentViewAll(request, cid, aid):
     return render(request, 'assignment-view.html')
 
-
-def assignmentSubmit(request, id):
-    return render(request, 'assignment-view.html')
-
-
-def assignmentViewAll(request):
-    return render(request, 'assignment-view.html')
 
 def assign_courses_to_faculty(request):
     if request.method == 'POST':
@@ -411,7 +480,6 @@ def assign_courses_to_faculty(request):
         faculty = Users.objects.get(id=faculty_id)
         courses = Course.objects.filter(id__in=course_ids)
         students = Users.objects.filter(id__in=student_ids)
-       
 
         for student in students:
             student.faculty = faculty
@@ -419,8 +487,8 @@ def assign_courses_to_faculty(request):
 
         unassigned_courses = courses.exclude(faculty=faculty)
 
-        faculty.courses_assigned.set(unassigned_courses)
-        student.enrolled_courses.set(unassigned_courses)
+        faculty.courses_assigned.add(*unassigned_courses)
+        student.enrolled_courses.add(*unassigned_courses)
 
         messages.success(request, 'Course added successfully to the faculty')
         return redirect('assign.courses_to_faculty')
@@ -429,6 +497,7 @@ def assign_courses_to_faculty(request):
     courses = Course.objects.all()
     students = Users.objects.filter(user_type='student')
     return render(request, 'assign_courses_to_faculty.html', {'faculties': faculties, 'courses': courses, 'students': students})
+
 
 def courses(request):
     if request.method == 'POST':
@@ -454,3 +523,49 @@ def deletecourse(request, id):
     course.delete()
     messages.success(request, 'Course deleted')
     return redirect('add-course')
+
+
+def course_view(request, cid):
+    course = get_object_or_404(Course, id=cid)
+    resources = Resource.objects.filter(course=course)
+    announcements = Announcement.objects.filter(course=course)
+    assignments = Assignment.objects.filter(course=course)
+    user_id = request.session.get('user_id')
+
+    is_faculty = False
+    if user_id:
+        user = Users.objects.get(id=user_id)
+        if user.user_type == 'faculty':
+            is_faculty = True
+
+    context = {
+        'course': course,
+        'resources': resources,
+        'announcements': announcements,
+        'assignments': assignments,
+        'is_faculty': is_faculty,
+    }
+
+    return render(request, 'course-view.html', context)
+
+
+def uploadCourseMaterial(request, cid):
+    if request.method == 'POST':
+        title = request.POST['title']
+        description = request.POST['description']
+        file_upload = request.FILES['file_upload']
+        resource_type = request.POST['resource_type']
+
+        course = Course.objects.get(id=cid)
+
+        resource = Resource.objects.create(
+            course=course,
+            title=title,
+            description=description,
+            file_upload=file_upload,
+            resource_type=resource_type,
+        )
+        messages.success(request, 'Resource uploaded successfully')
+        return redirect('course.view', cid=cid)
+
+    return render(request, 'resourceupload.html', {'course_id': cid})

@@ -3,6 +3,17 @@
 {% block title %}
     Submission
 {% endblock %}
-{% block content %}
 
+{% block nav %}
+{% include 'navbar.html' %}
+{% endblock %}
+{% block content %}
+<form method="post" action="{% url 'assignmentSubmit' course.id assignment.id %}" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="submission_file" class="form-label">Upload File</label>
+        <input type="file" class="form-control" id="submission_file" name="file_upload" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit Assignment</button>
+</form>
 {% endblock %}
